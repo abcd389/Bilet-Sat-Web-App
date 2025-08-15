@@ -1,106 +1,339 @@
 @model BiletSatisWebApp.Models.ViewModel.KoltukSecimiVM
-<h2>Koltuk Seçimi</h2>
 
-<p>
-    Sefer: @Model.Trip.FromCity → @Model.Trip.ToCity
-    @* (@Model.Trip.DepartureTime.ToString("dd.MM.yyyy HH:mm")) *@
-</p>
+@{
+    ViewData["Title"] = "Koltuk Seçimi";
+}
 
-<div id="bus-interior" class="bus-interior">
-    <div class="bus-section">
-        <h3>Konteyner Koltukları</h3>
-        <div class="seat-row">
-            @for (int i = 1; i <= 4; i++)
-            {
-                <button class="seat @(Model.SelectedSeats.Contains(i) ? "selected" : "")" data-seat-id="@i" onclick="selectSeat(@i)">
-                    @i
-                </button>
-            }
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-chair"></i> Koltuk Seçimi - @Model.TransportType</h4>
+                    <p class="mb-0">
+                        <strong>Sefer:</strong> @Model.Trip.FromCity → @Model.Trip.ToCity 
+                        (@Model.Trip.DepartureDate.ToString("dd.MM.yyyy") @Model.Trip.DepartureTime.ToString(@"hh\:mm"))
+                    </p>
+                </div>
+                <div class="card-body">
+                    <div class="seat-legend mb-4">
+                        <div class="d-flex justify-content-center flex-wrap gap-3">
+                            <div class="legend-item">
+                                <div class="seat available-legend"></div>
+                                <span>Boş</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="seat selected-legend"></div>
+                                <span>Seçili</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="seat occupied-legend"></div>
+                                <span>Dolu</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (Model.TransportType == "Otobüs")
+                    {
+                        <!-- Bus Layout -->
+                        <div id="bus-interior" class="transport-interior">
+                            <div class="text-center mb-3">
+                                <i class="fas fa-bus text-primary" style="font-size: 2rem;"></i>
+                                <p class="mb-0">Otobüs İç Düzeni</p>
+                            </div>
+                            
+                            <div class="bus-sections">
+                                <!-- Front Section -->
+                                <div class="bus-section">
+                                    <h6 class="text-center">Ön Koltuklar</h6>
+                                    <div class="seat-layout">
+                                        @for (int row = 1; row <= 6; row++)
+                                        {
+                                            <div class="seat-row">
+                                                @for (int col = 1; col <= 4; col++)
+                                                {
+                                                    int seatNumber = (row - 1) * 4 + col;
+                                                    if (col == 3) // Koridor
+                                                    {
+                                                        <div class="aisle"></div>
+                                                    }
+                                                    <button class="seat @(GetSeatClass(seatNumber))" 
+                                                            data-seat-id="@seatNumber" 
+                                                            onclick="selectSeat(@seatNumber)"
+                                                            @(Model.SoldSeats.Contains(seatNumber) ? "disabled" : "")>
+                                                        @seatNumber
+                                                    </button>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                                
+                                <!-- Back Section -->
+                                <div class="bus-section mt-3">
+                                    <h6 class="text-center">Arka Koltuklar</h6>
+                                    <div class="seat-layout">
+                                        @for (int row = 7; row <= 8; row++)
+                                        {
+                                            <div class="seat-row">
+                                                @for (int col = 1; col <= 5; col++)
+                                                {
+                                                    int seatNumber = 24 + (row - 7) * 5 + col;
+                                                    if (col == 3) // Koridor
+                                                    {
+                                                        <div class="aisle"></div>
+                                                    }
+                                                    <button class="seat @(GetSeatClass(seatNumber))" 
+                                                            data-seat-id="@seatNumber" 
+                                                            onclick="selectSeat(@seatNumber)"
+                                                            @(Model.SoldSeats.Contains(seatNumber) ? "disabled" : "")>
+                                                        @seatNumber
+                                                    </button>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else if (Model.TransportType == "Uçak")
+                    {
+                        <!-- Airplane Layout -->
+                        <div id="airplane-interior" class="transport-interior">
+                            <div class="text-center mb-3">
+                                <i class="fas fa-plane text-primary" style="font-size: 2rem;"></i>
+                                <p class="mb-0">Uçak İç Düzeni</p>
+                            </div>
+                            
+                            <!-- Business Class -->
+                            <div class="airplane-section">
+                                <h6 class="text-center">Business Sınıfı</h6>
+                                <div class="seat-layout business">
+                                    @for (int row = 1; row <= 5; row++)
+                                    {
+                                        <div class="seat-row">
+                                            @for (int col = 1; col <= 4; col++)
+                                            {
+                                                int seatNumber = (row - 1) * 4 + col;
+                                                if (col == 3) // Koridor
+                                                {
+                                                    <div class="aisle"></div>
+                                                }
+                                                <button class="seat business-seat @(GetSeatClass(seatNumber))" 
+                                                        data-seat-id="@seatNumber" 
+                                                        onclick="selectSeat(@seatNumber)"
+                                                        @(Model.SoldSeats.Contains(seatNumber) ? "disabled" : "")>
+                                                    @seatNumber
+                                                </button>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Economy Class -->
+                            <div class="airplane-section mt-3">
+                                <h6 class="text-center">Ekonomi Sınıfı</h6>
+                                <div class="seat-layout economy">
+                                    @for (int row = 6; row <= 30; row++)
+                                    {
+                                        <div class="seat-row">
+                                            @for (int col = 1; col <= 6; col++)
+                                            {
+                                                int seatNumber = 20 + (row - 6) * 6 + col;
+                                                if (col == 3 || col == 4) // Koridor
+                                                {
+                                                    <div class="aisle"></div>
+                                                }
+                                                <button class="seat economy-seat @(GetSeatClass(seatNumber))" 
+                                                        data-seat-id="@seatNumber" 
+                                                        onclick="selectSeat(@seatNumber)"
+                                                        @(Model.SoldSeats.Contains(seatNumber) ? "disabled" : "")>
+                                                    @seatNumber
+                                                </button>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else if (Model.TransportType == "Tren")
+                    {
+                        <!-- Train Layout -->
+                        <div id="train-interior" class="transport-interior">
+                            <div class="text-center mb-3">
+                                <i class="fas fa-train text-primary" style="font-size: 2rem;"></i>
+                                <p class="mb-0">Tren İç Düzeni</p>
+                            </div>
+                            
+                            <div class="train-sections">
+                                @for (int wagon = 1; wagon <= 3; wagon++)
+                                {
+                                    <div class="train-wagon">
+                                        <h6 class="text-center">@wagon. Vagon</h6>
+                                        <div class="seat-layout">
+                                            @for (int row = 1; row <= 10; row++)
+                                            {
+                                                <div class="seat-row">
+                                                    @for (int col = 1; col <= 4; col++)
+                                                    {
+                                                        int seatNumber = (wagon - 1) * 40 + (row - 1) * 4 + col;
+                                                        if (col == 3) // Koridor
+                                                        {
+                                                            <div class="aisle"></div>
+                                                        }
+                                                        <button class="seat @(GetSeatClass(seatNumber))" 
+                                                                data-seat-id="@seatNumber" 
+                                                                onclick="selectSeat(@seatNumber)"
+                                                                @(Model.SoldSeats.Contains(seatNumber) ? "disabled" : "")>
+                                                            @seatNumber
+                                                        </button>
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
         </div>
-        <div class="seat-row">
-            @for (int i = 5; i <= 8; i++)
-            {
-                <button class="seat @(Model.SelectedSeats.Contains(i) ? "selected" : "")" data-seat-id="@i" onclick="selectSeat(@i)">
-                    @i
-                </button>
-            }
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> Sefer Bilgileri</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Güzergah:</strong><br>
+                        <span class="text-primary">@Model.Trip.FromCity</span> 
+                        <i class="fas fa-arrow-right mx-2"></i> 
+                        <span class="text-primary">@Model.Trip.ToCity</span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Tarih:</strong><br>
+                        @Model.Trip.DepartureDate.ToString("dd MMMM yyyy dddd", new System.Globalization.CultureInfo("tr-TR"))
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Saat:</strong><br>
+                        @Model.Trip.DepartureTime.ToString(@"hh\:mm")
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Bilet Fiyatı:</strong><br>
+                        <span class="h5 text-success">@Model.Trip.Price.ToString("C", new System.Globalization.CultureInfo("tr-TR"))</span>
+                    </div>
+                    
+                    <div class="mb-3" id="selectedSeatsInfo" style="display: none;">
+                        <strong>Seçilen Koltuklar:</strong><br>
+                        <div id="selectedSeatsList"></div>
+                    </div>
+                    
+                    <div class="mb-3" id="totalPriceInfo" style="display: none;">
+                        <strong>Toplam Tutar:</strong><br>
+                        <span class="h5 text-success" id="totalPrice"></span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    <div class="bus-section">
-        <h3>İkinci Konteyner Koltukları</h3>
-        <div class="seat-row">
-            @for (int i = 9; i <= 12; i++)
-            {
-                <button class="seat @(Model.SelectedSeats.Contains(i) ? "selected" : "")" data-seat-id="@i" onclick="selectSeat(@i)">
-                    @i
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between">
+                @{
+                    string backUrl = "";
+                    switch (Model.TransportType)
+                    {
+                        case "Otobüs":
+                            backUrl = Url.Action("OtobusListesi", "Bilet", new { from = Model.Trip.FromCity, to = Model.Trip.ToCity, tarih = Model.Trip.DepartureDate.ToString("dd.MM.yyyy") });
+                            break;
+                        case "Uçak":
+                            backUrl = Url.Action("UcakListesi", "Bilet", new { from = Model.Trip.FromCity, to = Model.Trip.ToCity, tarih = Model.Trip.DepartureDate.ToString("dd.MM.yyyy") });
+                            break;
+                        case "Tren":
+                            backUrl = Url.Action("TrenListesi", "Bilet", new { from = Model.Trip.FromCity, to = Model.Trip.ToCity, tarih = Model.Trip.DepartureDate.ToString("dd.MM.yyyy") });
+                            break;
+                        default:
+                            backUrl = Url.Action("Index", "Home");
+                            break;
+                    }
+                }
+                <a href="@backUrl" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-arrow-left"></i> Geri
+                </a>
+                <button id="continue-button" class="btn btn-primary btn-lg" onclick="submitSelectedSeats()" disabled>
+                    <i class="fas fa-arrow-right"></i> Devam
                 </button>
-            }
-        </div>
-        <div class="seat-row">
-            @for (int i = 13; i <= 16; i++)
-            {
-                <button class="seat @(Model.SelectedSeats.Contains(i) ? "selected" : "")" data-seat-id="@i" onclick="selectSeat(@i)">
-                    @i
-                </button>
-            }
-        </div>
-    </div>
-    <div class="bus-section">
-        <h3>Arka Koltuklar</h3>
-        <div class="seat-row">
-            @for (int i = 17; i <= 20; i++)
-            {
-                <button class="seat @(Model.SelectedSeats.Contains(i) ? "selected" : "")" data-seat-id="@i" onclick="selectSeat(@i)">
-                    @i
-                </button>
-            }
-        </div>
-        <div class="seat-row">
-            @for (int i = 21; i <= 24; i++)
-            {
-                <button class="seat @(Model.SelectedSeats.Contains(i) ? "selected" : "")" data-seat-id="@i" onclick="selectSeat(@i)">
-                    @i
-                </button>
-            }
-        </div>
-    </div>
-    <div class="bus-section">
-        <h3>Galeri Koltukları</h3>
-        <div class="seat-row">
-            @for (int i = 25; i <= 30; i++)
-            {
-                <button class="seat @(Model.SelectedSeats.Contains(i) ? "selected" : "")" data-seat-id="@i" onclick="selectSeat(@i)">
-                    @i
-                </button>
-            }
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Geri Butonu -->
- <a href="@Url.Action("OtobusListesi", "Bilet", new { nereden = Model.Trip.FromCity, nereye = Model.Trip.ToCity, gidisTarihi = Model.Trip.DepartureDate.ToString("dd.MM.yyyy") })" class="btn btn-secondary">← Geri</a> 
-
-<!-- Devam Butonu -->
-<button id="continue-button" class="btn btn-primary" onclick="submitSelectedSeats()">Devam</button>
-
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    let selectedSeats = [];
+    const tripPrice = @Model.Trip.Price;
+
     function selectSeat(seatId) {
         const seatButton = document.querySelector(`button[data-seat-id='${seatId}']`);
+        
+        if (seatButton.disabled) {
+            return; // Seat is already sold
+        }
+        
         if (seatButton.classList.contains('selected')) {
             seatButton.classList.remove('selected');
+            selectedSeats = selectedSeats.filter(s => s !== seatId);
         } else {
             seatButton.classList.add('selected');
+            selectedSeats.push(seatId);
+        }
+        
+        updateSelectedSeatsDisplay();
+    }
+
+    function updateSelectedSeatsDisplay() {
+        const selectedSeatsInfo = document.getElementById('selectedSeatsInfo');
+        const selectedSeatsList = document.getElementById('selectedSeatsList');
+        const totalPriceInfo = document.getElementById('totalPriceInfo');
+        const totalPriceElement = document.getElementById('totalPrice');
+        const continueButton = document.getElementById('continue-button');
+        
+        if (selectedSeats.length > 0) {
+            selectedSeatsInfo.style.display = 'block';
+            totalPriceInfo.style.display = 'block';
+            continueButton.disabled = false;
+            
+            selectedSeatsList.innerHTML = selectedSeats.map(seat => 
+                `<span class="badge bg-primary me-1">${seat}</span>`
+            ).join('');
+            
+            const totalPrice = selectedSeats.length * tripPrice;
+            totalPriceElement.textContent = new Intl.NumberFormat('tr-TR', {
+                style: 'currency',
+                currency: 'TRY'
+            }).format(totalPrice);
+        } else {
+            selectedSeatsInfo.style.display = 'none';
+            totalPriceInfo.style.display = 'none';
+            continueButton.disabled = true;
         }
     }
 
     function submitSelectedSeats() {
-        const selectedSeats = Array.from(document.querySelectorAll('.seat.selected')).map(seat => seat.getAttribute('data-seat-id'));
         if (selectedSeats.length === 0) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Uyarı!',
-                text: 'Lütfen bir koltuk seçiniz!'
+                text: 'Lütfen en az bir koltuk seçiniz!'
             });
             return;
         }
@@ -116,13 +349,8 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Başarılı!',
-                    text: 'Koltuk seçimi tamamlandı!'
-                }).then(() => {
-                    window.location.href = '@Url.Action("Odeme", "Bilet")'; // Redirect to payment page
-                });
+                // Redirect to payment page
+                window.location.href = '@Url.Action("Odeme", "Bilet")';
             } else {
                 Swal.fire({
                     icon: 'error',
@@ -139,48 +367,169 @@
             });
         });
     }
+
+    @{
+        string GetSeatClass(int seatNumber)
+        {
+            if (Model.SoldSeats.Contains(seatNumber))
+                return "occupied";
+            else if (Model.SelectedSeats.Contains(seatNumber))
+                return "selected";
+            else
+                return "";
+        }
+    }
 </script>
 
 <style>
-    .bus-interior {
+    .transport-interior {
+        max-width: 100%;
+        margin: 0 auto;
+    }
+
+    .seat-layout {
         display: flex;
         flex-direction: column;
         align-items: center;
-        margin-top: 20px;
-    }
-
-    .bus-section {
-        margin-bottom: 20px;
-        text-align: center;
+        gap: 5px;
     }
 
     .seat-row {
         display: flex;
-        gap: 10px;
-        margin-bottom: 10px;
+        gap: 5px;
+        align-items: center;
     }
 
     .seat {
-        width: 50px;
-        height: 50px;
-        border: 1px solid #000;
+        width: 40px;
+        height: 40px;
+        border: 2px solid #ddd;
         background-color: #fff;
         cursor: pointer;
-        font-size: 16px;
+        font-size: 12px;
+        font-weight: bold;
+        border-radius: 8px;
+        transition: all 0.3s ease;
     }
 
-    .selected {
+    .seat:hover:not(:disabled) {
+        border-color: #007bff;
+        transform: scale(1.1);
+    }
+
+    .seat.selected {
         background-color: #007bff;
-        color: #fff;
+        color: white;
+        border-color: #0056b3;
+    }
+
+    .seat.occupied {
+        background-color: #dc3545;
+        color: white;
+        border-color: #c82333;
+        cursor: not-allowed;
+    }
+
+    .seat:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .business-seat {
+        background-color: #f8f9fa;
+        border-color: #6c757d;
+        width: 45px;
+        height: 45px;
+    }
+
+    .economy-seat {
+        width: 35px;
+        height: 35px;
     }
 
     .aisle {
-        width: 20px;
-        height: 50px;
-        background-color: #ccc;
+        width: 30px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6c757d;
     }
 
-    .bus-section h3 {
-        margin-bottom: 10px;
+    .aisle:after {
+        content: "◦";
+        font-size: 20px;
+    }
+
+    .bus-section, .airplane-section, .train-wagon {
+        margin-bottom: 20px;
+        padding: 15px;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        background-color: #f8f9fa;
+    }
+
+    .seat-legend {
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .available-legend {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #ddd;
+        background-color: #fff;
+        border-radius: 4px;
+    }
+
+    .selected-legend {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #0056b3;
+        background-color: #007bff;
+        border-radius: 4px;
+    }
+
+    .occupied-legend {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #c82333;
+        background-color: #dc3545;
+        border-radius: 4px;
+    }
+
+    .card {
+        border: none;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    @media (max-width: 768px) {
+        .seat {
+            width: 30px;
+            height: 30px;
+            font-size: 10px;
+        }
+        
+        .business-seat {
+            width: 35px;
+            height: 35px;
+        }
+        
+        .economy-seat {
+            width: 25px;
+            height: 25px;
+        }
     }
 </style>

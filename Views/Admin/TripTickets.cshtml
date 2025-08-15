@@ -1,0 +1,271 @@
+@model List<BiletSatisWebApp.Models.Ticket>
+
+@{
+    ViewData["Title"] = "Sefer Biletleri";
+    var trip = ViewBag.Trip as BiletSatisWebApp.Models.Trip;
+}
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-ticket-alt"></i> Sefer Biletleri
+                    </h4>
+                    <p class="mb-0">
+                        <strong>Sefer:</strong> @trip.FromCity → @trip.ToCity
+                        (@trip.DepartureDate.ToString("dd.MM.yyyy") @trip.DepartureTime.ToString(@"hh\:mm"))
+                        - @trip.TransportType
+                    </p>
+                </div>
+                <div class="card-body">
+                    @if (Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Bilet ID</th>
+                                        <th>Yolcu Bilgileri</th>
+                                        <th>İletişim</th>
+                                        <th>Koltuklar</th>
+                                        <th>Tutar</th>
+                                        <th>Satış Tarihi</th>
+                                        <th>Durum</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var ticket in Model)
+                                    {
+                                        <tr class="@(ticket.IsCancelled ? "table-danger" : "")">
+                                            <td>
+                                                <strong>#@ticket.Id</strong>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <strong>@ticket.PassengerFirstName @ticket.PassengerLastName</strong>
+                                                </div>
+                                                <small class="text-muted">Sistem Kullanıcısı: @ticket.User?.UserName</small>
+                                            </td>
+                                            <td>
+                                                <div class="mb-1">
+                                                    <i class="fas fa-envelope text-primary"></i> 
+                                                    <a href="mailto:@ticket.PassengerEmail">@ticket.PassengerEmail</a>
+                                                </div>
+                                                <div>
+                                                    <i class="fas fa-phone text-success"></i> 
+                                                    <a href="tel:@ticket.PassengerPhone">@ticket.PassengerPhone</a>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                @foreach (var seat in ticket.SeatNumbers)
+                                                {
+                                                    <span class="badge bg-primary me-1">@seat</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <strong class="text-success">
+                                                    @ticket.TotalPrice.ToString("C", new System.Globalization.CultureInfo("tr-TR"))
+                                                </strong>
+                                            </td>
+                                            <td>
+                                                <div>@ticket.PurchaseDate.ToString("dd.MM.yyyy")</div>
+                                                <small class="text-muted">@ticket.PurchaseDate.ToString("HH:mm")</small>
+                                            </td>
+                                            <td>
+                                                @if (ticket.IsCancelled)
+                                                {
+                                                    <span class="badge bg-danger">İptal Edildi</span>
+                                                    @if (ticket.CancellationDate.HasValue)
+                                                    {
+                                                        <br><small class="text-muted">@ticket.CancellationDate.Value.ToString("dd.MM.yyyy HH:mm")</small>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-success">Aktif</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Summary -->
+                        <div class="row mt-4">
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body text-center">
+                                        <h4>@Model.Count</h4>
+                                        <p class="mb-0">Toplam Bilet</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body text-center">
+                                        <h4>@Model.Count(t => !t.IsCancelled)</h4>
+                                        <p class="mb-0">Aktif Bilet</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <div class="card bg-danger text-white">
+                                    <div class="card-body text-center">
+                                        <h4>@Model.Count(t => t.IsCancelled)</h4>
+                                        <p class="mb-0">İptal Edilen</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <div class="card bg-warning text-white">
+                                    <div class="card-body text-center">
+                                        <h4>@Model.Where(t => !t.IsCancelled).Sum(t => t.TotalPrice).ToString("C", new System.Globalization.CultureInfo("tr-TR"))</h4>
+                                        <p class="mb-0">Toplam Gelir</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Seat Occupancy Chart -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            <i class="fas fa-chart-pie"></i> Koltuk Doluluk Oranı
+                                        </h6>
+                                        @{
+                                            int totalSeats = trip.TicketCount;
+                                            int occupiedSeats = Model.Where(t => !t.IsCancelled).Sum(t => t.SeatNumbers.Count);
+                                            double occupancyRate = totalSeats > 0 ? (double)occupiedSeats / totalSeats * 100 : 0;
+                                        }
+                                        <div class="progress mb-2" style="height: 30px;">
+                                            <div class="progress-bar bg-success" role="progressbar" 
+                                                 style="width: @occupancyRate%" 
+                                                 aria-valuenow="@occupancyRate" aria-valuemin="0" aria-valuemax="100">
+                                                @occupancyRate.ToString("F1")%
+                                            </div>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span><strong>Dolu:</strong> @occupiedSeats</span>
+                                            <span><strong>Boş:</strong> @(totalSeats - occupiedSeats)</span>
+                                            <span><strong>Toplam:</strong> @totalSeats</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-ticket-alt text-muted" style="font-size: 4rem;"></i>
+                            <h5 class="text-muted mt-3">Bu sefer için henüz bilet satılmamış.</h5>
+                            <p class="text-muted">Biletler satılmaya başladığında burada görünecek.</p>
+                        </div>
+                    }
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="@Url.Action("Trips", "Admin")" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Seferler
+                        </a>
+                        <a href="@Url.Action("TripSeats", "Admin", new { tripId = trip.Id })" class="btn btn-primary">
+                            <i class="fas fa-chair"></i> Koltuk Durumu
+                        </a>
+                        <a href="@Url.Action("SoldTickets", "Admin")" class="btn btn-success">
+                            <i class="fas fa-list"></i> Tüm Biletler
+                        </a>
+                        @if (Model.Any(t => !t.IsCancelled))
+                        {
+                            <button class="btn btn-info" onclick="printPassengerList()">
+                                <i class="fas fa-print"></i> Yolcu Listesi
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function printPassengerList() {
+        let printContent = `
+            <h2>Yolcu Listesi</h2>
+            <p><strong>Sefer:</strong> @trip.FromCity → @trip.ToCity (@trip.DepartureDate.ToString("dd.MM.yyyy") @trip.DepartureTime.ToString(@"hh\:mm"))</p>
+            <table border="1" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background-color: #f8f9fa;">
+                        <th style="padding: 8px;">Yolcu Adı</th>
+                        <th style="padding: 8px;">Koltuk No</th>
+                        <th style="padding: 8px;">Telefon</th>
+                        <th style="padding: 8px;">E-posta</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+        
+        @foreach (var ticket in Model.Where(t => !t.IsCancelled))
+        {
+            <text>
+            printContent += `
+                <tr>
+                    <td style="padding: 8px;">@ticket.PassengerFirstName @ticket.PassengerLastName</td>
+                    <td style="padding: 8px;">@string.Join(", ", ticket.SeatNumbers)</td>
+                    <td style="padding: 8px;">@ticket.PassengerPhone</td>
+                    <td style="padding: 8px;">@ticket.PassengerEmail</td>
+                </tr>`;
+            </text>
+        }
+        
+        printContent += `
+                </tbody>
+            </table>
+            <p style="margin-top: 20px;"><small>Yazdırma Tarihi: ${new Date().toLocaleDateString('tr-TR')}</small></p>
+        `;
+        
+        let printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Yolcu Listesi - @trip.FromCity → @trip.ToCity</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        table { margin-top: 20px; }
+                        th { background-color: #f8f9fa !important; }
+                    </style>
+                </head>
+                <body>
+                    ${printContent}
+                </body>
+            </html>
+        `);
+        printWindow.document.close();
+        printWindow.print();
+    }
+</script>
+
+<style>
+    .table-responsive {
+        border-radius: 0.375rem;
+    }
+    
+    .badge {
+        font-size: 0.75em;
+    }
+    
+    .progress {
+        border-radius: 15px;
+    }
+    
+    .progress-bar {
+        border-radius: 15px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
