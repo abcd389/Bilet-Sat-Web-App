@@ -107,7 +107,7 @@ namespace BiletSatisWebApp.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            // Get user's tickets
+            // Get user's tickets  
             var tickets = await _context.Tickets
                 .Include(t => t.Trip)
                 .Where(t => t.UserId == user.Id)

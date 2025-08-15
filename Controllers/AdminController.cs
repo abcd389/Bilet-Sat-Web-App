@@ -73,7 +73,7 @@ namespace BiletSatisWebApp.Controllers
             return View(model);
         }
 
-        // Mevcut seyahat işlemleri
+        // Mevcut sefer işlemleri
         public IActionResult Trips()
         {
             var now = DateTime.Now;
