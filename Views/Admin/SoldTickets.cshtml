@@ -1,0 +1,236 @@
+@model List<BiletSatisWebApp.Models.Ticket>
+
+@{
+    ViewData["Title"] = "Satılan Biletler";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-ticket-alt"></i> Satılan Biletler
+                        <span class="badge bg-light text-dark ms-2">@Model.Count</span>
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Bilet ID</th>
+                                        <th>Yolcu</th>
+                                        <th>İletişim</th>
+                                        <th>Sefer</th>
+                                        <th>Koltuklar</th>
+                                        <th>Tutar</th>
+                                        <th>Tarih</th>
+                                        <th>Durum</th>
+                                        <th>İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var ticket in Model)
+                                    {
+                                        <tr class="@(ticket.IsCancelled ? "table-danger" : "")">
+                                            <td>
+                                                <strong>#@ticket.Id</strong>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <strong>@ticket.PassengerFirstName @ticket.PassengerLastName</strong>
+                                                </div>
+                                                <small class="text-muted">Kullanıcı: @ticket.User?.UserName</small>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <i class="fas fa-envelope"></i> @ticket.PassengerEmail
+                                                </div>
+                                                <div>
+                                                    <i class="fas fa-phone"></i> @ticket.PassengerPhone
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <strong>@ticket.Trip.FromCity → @ticket.Trip.ToCity</strong>
+                                                </div>
+                                                <div>
+                                                    <span class="badge bg-info">@ticket.Trip.TransportType</span>
+                                                </div>
+                                                <small>
+                                                    @ticket.Trip.DepartureDate.ToString("dd.MM.yyyy") 
+                                                    @ticket.Trip.DepartureTime.ToString(@"hh\:mm")
+                                                </small>
+                                            </td>
+                                            <td>
+                                                @foreach (var seat in ticket.SeatNumbers)
+                                                {
+                                                    <span class="badge bg-primary me-1">@seat</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <strong class="text-success">
+                                                    @ticket.TotalPrice.ToString("C", new System.Globalization.CultureInfo("tr-TR"))
+                                                </strong>
+                                            </td>
+                                            <td>
+                                                <div>@ticket.PurchaseDate.ToString("dd.MM.yyyy")</div>
+                                                <small class="text-muted">@ticket.PurchaseDate.ToString("HH:mm")</small>
+                                            </td>
+                                            <td>
+                                                @if (ticket.IsCancelled)
+                                                {
+                                                    <span class="badge bg-danger">İptal</span>
+                                                    @if (ticket.CancellationDate.HasValue)
+                                                    {
+                                                        <br><small class="text-muted">@ticket.CancellationDate.Value.ToString("dd.MM.yyyy HH:mm")</small>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-success">Aktif</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="@Url.Action("TripSeats", "Admin", new { tripId = ticket.TripId })" 
+                                                       class="btn btn-sm btn-outline-primary" title="Koltuk Durumu">
+                                                        <i class="fas fa-chair"></i>
+                                                    </a>
+                                                    <a href="@Url.Action("TripTickets", "Admin", new { tripId = ticket.TripId })" 
+                                                       class="btn btn-sm btn-outline-info" title="Sefer Biletleri">
+                                                        <i class="fas fa-list"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Summary Card -->
+                        <div class="row mt-4">
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body">
+                                        <div class="d-flex">
+                                            <div class="flex-grow-1">
+                                                <h6 class="text-white-50">Toplam Bilet</h6>
+                                                <h4>@Model.Count</h4>
+                                            </div>
+                                            <div class="align-self-center">
+                                                <i class="fas fa-ticket-alt fa-2x"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body">
+                                        <div class="d-flex">
+                                            <div class="flex-grow-1">
+                                                <h6 class="text-white-50">Aktif Biletler</h6>
+                                                <h4>@Model.Count(t => !t.IsCancelled)</h4>
+                                            </div>
+                                            <div class="align-self-center">
+                                                <i class="fas fa-check-circle fa-2x"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <div class="card bg-danger text-white">
+                                    <div class="card-body">
+                                        <div class="d-flex">
+                                            <div class="flex-grow-1">
+                                                <h6 class="text-white-50">İptal Edilen</h6>
+                                                <h4>@Model.Count(t => t.IsCancelled)</h4>
+                                            </div>
+                                            <div class="align-self-center">
+                                                <i class="fas fa-ban fa-2x"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <div class="card bg-warning text-white">
+                                    <div class="card-body">
+                                        <div class="d-flex">
+                                            <div class="flex-grow-1">
+                                                <h6 class="text-white-50">Toplam Gelir</h6>
+                                                <h4>@Model.Where(t => !t.IsCancelled).Sum(t => t.TotalPrice).ToString("C", new System.Globalization.CultureInfo("tr-TR"))</h4>
+                                            </div>
+                                            <div class="align-self-center">
+                                                <i class="fas fa-money-bill-wave fa-2x"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-ticket-alt text-muted" style="font-size: 4rem;"></i>
+                            <h5 class="text-muted mt-3">Henüz satılmış bilet bulunmuyor.</h5>
+                            <p class="text-muted">Biletler satılmaya başladığında burada görünecek.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">Hızlı İşlemler</h6>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="@Url.Action("Index", "Admin")" class="btn btn-outline-primary">
+                            <i class="fas fa-home"></i> Ana Panel
+                        </a>
+                        <a href="@Url.Action("Trips", "Admin")" class="btn btn-outline-success">
+                            <i class="fas fa-route"></i> Seferler
+                        </a>
+                        <a href="@Url.Action("SellTicket", "Admin")" class="btn btn-outline-warning">
+                            <i class="fas fa-plus"></i> Yeni Sefer
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table-responsive {
+        border-radius: 0.375rem;
+    }
+    
+    .badge {
+        font-size: 0.75em;
+    }
+    
+    .btn-group .btn {
+        border-radius: 0.375rem !important;
+        margin-right: 2px;
+    }
+    
+    .card {
+        transition: transform 0.2s ease-in-out;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+    }
+</style>

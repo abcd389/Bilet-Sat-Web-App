@@ -1,0 +1,185 @@
+@model BiletSatisWebApp.Models.ViewModel.PaymentVM
+
+@{
+    ViewData["Title"] = "Ödeme";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-credit-card"></i> Ödeme Bilgileri</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Odeme" method="post">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="FirstName" class="form-label">İsim *</label>
+                                    <input asp-for="FirstName" class="form-control" placeholder="İsminizi giriniz" required />
+                                    <span asp-validation-for="FirstName" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="LastName" class="form-label">Soyisim *</label>
+                                    <input asp-for="LastName" class="form-control" placeholder="Soyisminizi giriniz" required />
+                                    <span asp-validation-for="LastName" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Email" class="form-label">E-posta *</label>
+                                    <input asp-for="Email" type="email" class="form-control" placeholder="ornek@email.com" required />
+                                    <span asp-validation-for="Email" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Phone" class="form-label">Telefon *</label>
+                                    <input asp-for="Phone" type="tel" class="form-control" placeholder="05XX XXX XX XX" required />
+                                    <span asp-validation-for="Phone" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <a href="@Url.Action("KoltukSecimi", "Bilet", new { tripId = Model.Trip.Id })" class="btn btn-secondary">
+                                        <i class="fas fa-arrow-left"></i> Geri
+                                    </a>
+                                    <button type="submit" class="btn btn-success btn-lg" id="paymentBtn">
+                                        <i class="fas fa-check"></i> Bileti Satın Al
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> Sefer Bilgileri</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Güzergah:</strong><br>
+                        <span class="text-primary">@Model.Trip.FromCity</span> 
+                        <i class="fas fa-arrow-right mx-2"></i> 
+                        <span class="text-primary">@Model.Trip.ToCity</span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Tarih:</strong><br>
+                        @Model.Trip.DepartureDate.ToString("dd MMMM yyyy dddd", new System.Globalization.CultureInfo("tr-TR"))
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Saat:</strong><br>
+                        @Model.Trip.DepartureTime.ToString(@"hh\:mm")
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Ulaşım Türü:</strong><br>
+                        <span class="badge bg-info">@Model.Trip.TransportType</span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Seçilen Koltuklar:</strong><br>
+                        @foreach (var seat in Model.SelectedSeats)
+                        {
+                            <span class="badge bg-primary me-1">@seat</span>
+                        }
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Bilet Fiyatı:</span>
+                            <span>@Model.Trip.Price.ToString("C", new System.Globalization.CultureInfo("tr-TR"))</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Koltuk Sayısı:</span>
+                            <span>@Model.SelectedSeats.Count</span>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between h5">
+                        <strong>Toplam Tutar:</strong>
+                        <strong class="text-success">@Model.TotalPrice.ToString("C", new System.Globalization.CultureInfo("tr-TR"))</strong>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-body text-center">
+                    <i class="fas fa-shield-alt text-success fs-2"></i>
+                    <p class="mt-2 mb-0"><small class="text-muted">Güvenli ödeme garantisi</small></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden inputs to preserve trip and seat information -->
+<input type="hidden" asp-for="Trip.Id" />
+<input type="hidden" asp-for="TotalPrice" />
+@foreach (var seat in Model.SelectedSeats)
+{
+    <input type="hidden" name="SelectedSeats" value="@seat" />
+}
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    // Handle form submission with SweetAlert
+    document.getElementById('paymentBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        Swal.fire({
+            title: 'Ödeme Onayı',
+            text: 'Toplam @Model.TotalPrice.ToString("C", new System.Globalization.CultureInfo("tr-TR")) tutarındaki ödemeyi onaylıyor musunuz?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Evet, Onayla',
+            cancelButtonText: 'İptal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Submit the form
+                document.querySelector('form').submit();
+            }
+        });
+    });
+</script>
+
+<style>
+    .card {
+        border: none;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .badge {
+        font-size: 0.875em;
+    }
+    
+    .fs-2 {
+        font-size: 2rem;
+    }
+</style>

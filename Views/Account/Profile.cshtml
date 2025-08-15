@@ -1,59 +1,259 @@
-﻿@model BiletSatisWebApp.Models.ProfileViewModel
+@model BiletSatisWebApp.Models.ViewModel.ProfileTravelVM
 
-<div class="text-center">
+@{
+    ViewData["Title"] = "Profilim";
+}
+
 <div class="container mt-4">
-    <h2 class="display-4 text-primary">Profilim</h2>
-  
-    </div>
-    <div class="col-md-6 offset-3 mb-4 ">
-        <div class="p-4 shadow rounded h-100" style="background-color:#f3f8ff;">
-            <i class="bi bi-person-fill fs-1 text-info-emphasis mb-3"></i>
-            <p><strong>Ad:</strong> @Model.Ad</p>
-            <p><strong>Soyad:</strong> @Model.Soyad</p>
-            <p><strong>Email:</strong> @Model.Email</p>
+    <div class="row">
+        <div class="col-12">
+            <h2 class="display-4 text-primary mb-4">
+                <i class="fas fa-user"></i> Profilim
+            </h2>
         </div>
     </div>
-    
-    <h3 class="display-4 text-primary">Seyahatlerim</h3>
-    <div class="col-md-6 offset-3 mb-4">
-        <div class="p-4 shadow rounded h-100" style="background-color:#f3f8ff;">
-            <i class="bi bi-ticket-perforated fs-1 text-danger-emphasis mb-3"></i>
-            @if (Model.Trips != null && Model.Trips.Any())
-            {
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Kalkış</th>
-                            <th>Varış</th>
-                            <th>Kalkış Tarihi</th>
-                            <th>Kalkış Saati</th>
-                            <th>Ulaşım Türü</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var trip in Model.Trips)
-                        {
-                            <tr>
-                                <td>@trip.FromCity</td>
-                                <td>@trip.ToCity</td>
-                                <td>@trip.DepartureDate.ToString("dd.MM.yyyy")</td>
-                                <td>@trip.DepartureTime.ToString(@"hh\:mm")</td>
-                                <td>@trip.TransportType</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            }
-            else
-            {
-        <p>Henüz kayıtlı bir seyahatiniz bulunmamaktadır.</p>
-    }
+
+    <!-- User Information -->
+    <div class="row mb-5">
+        <div class="col-lg-6 mx-auto">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-circle"></i> Kullanıcı Bilgileri
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="text-center mb-3">
+                                <i class="fas fa-user-circle text-primary" style="font-size: 4rem;"></i>
+                            </div>
+                        </div>
+                        <div class="col-sm-8">
+                            <div class="mb-3">
+                                <strong>Ad:</strong> @Model.Ad
+                            </div>
+                            <div class="mb-3">
+                                <strong>Soyad:</strong> @Model.Soyad
+                            </div>
+                            <div class="mb-3">
+                                <strong>Email:</strong> @Model.Email
+                            </div>
+                            <div class="mb-3">
+                                <strong>Kullanıcı Tipi:</strong> 
+                                <span class="badge bg-info">@Model.UserType</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-        <div class="mb-3">
+
+    <!-- Travel History -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-ticket-alt"></i> Seyahatlerim
+                        <span class="badge bg-light text-dark ms-2">@Model.Tickets.Count</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Tickets != null && Model.Tickets.Any())
+                    {
+                        <div class="row">
+                            @foreach (var ticket in Model.Tickets)
+                            {
+                                <div class="col-lg-6 col-xl-4 mb-4">
+                                    <div class="card h-100 border-0 shadow-sm">
+                                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold">
+                                                <i class="fas fa-@(ticket.Trip.TransportType == "Otobüs" ? "bus" : ticket.Trip.TransportType == "Uçak" ? "plane" : "train")"></i>
+                                                Bilet #@ticket.TicketId
+                                            </span>
+                                            <span class="badge bg-@ticket.StatusColor">@ticket.StatusText</span>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="mb-3">
+                                                <h6 class="text-primary">
+                                                    @ticket.Trip.FromCity
+                                                    <i class="fas fa-arrow-right mx-2"></i>
+                                                    @ticket.Trip.ToCity
+                                                </h6>
+                                                <small class="text-muted">@ticket.Trip.TransportType</small>
+                                            </div>
+
+                                            <div class="row text-sm mb-3">
+                                                <div class="col-6">
+                                                    <strong>Tarih:</strong><br>
+                                                    <small>@ticket.Trip.DepartureDate.ToString("dd.MM.yyyy")</small>
+                                                </div>
+                                                <div class="col-6">
+                                                    <strong>Saat:</strong><br>
+                                                    <small>@ticket.Trip.DepartureTime.ToString(@"hh\:mm")</small>
+                                                </div>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <strong>Yolcu:</strong><br>
+                                                <small>@ticket.PassengerName</small>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <strong>Koltuklar:</strong><br>
+                                                @foreach (var seat in ticket.SeatNumbers)
+                                                {
+                                                    <span class="badge bg-primary me-1">@seat</span>
+                                                }
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <strong>Toplam Tutar:</strong><br>
+                                                <span class="h6 text-success">@ticket.TotalPrice.ToString("C", new System.Globalization.CultureInfo("tr-TR"))</span>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <strong>Satın Alma Tarihi:</strong><br>
+                                                <small>@ticket.PurchaseDate.ToString("dd.MM.yyyy HH:mm")</small>
+                                            </div>
+
+                                            @if (ticket.IsCancelled && ticket.CancellationDate.HasValue)
+                                            {
+                                                <div class="mb-3">
+                                                    <strong>İptal Tarihi:</strong><br>
+                                                    <small class="text-danger">@ticket.CancellationDate.Value.ToString("dd.MM.yyyy HH:mm")</small>
+                                                </div>
+                                            }
+                                        </div>
+                                        <div class="card-footer bg-light">
+                                            @if (ticket.CanCancel && !ticket.IsCancelled)
+                                            {
+                                                <button class="btn btn-danger btn-sm w-100" onclick="cancelTicket(@ticket.TicketId)">
+                                                    <i class="fas fa-times"></i> Bileti İptal Et
+                                                </button>
+                                            }
+                                            else if (ticket.IsCancelled)
+                                            {
+                                                <span class="text-danger">
+                                                    <i class="fas fa-ban"></i> İptal Edildi
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">
+                                                    <i class="fas fa-info-circle"></i> İptal edilemez
+                                                </span>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-ticket-alt text-muted" style="font-size: 4rem;"></i>
+                            <h5 class="text-muted mt-3">Henüz kayıtlı bir seyahatiniz bulunmamaktadır.</h5>
+                            <p class="text-muted">İlk biletinizi almak için ana sayfaya göz atın.</p>
+                            <a href="@Url.Action("Index", "Home")" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Sefer Ara
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout Button -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
             <form method="post" asp-controller="Account" asp-action="Logout" style="display:inline;">
-                <button type="submit" class="btn btn-danger"><i class="bi bi-box-arrow-right"></i> Çıkış Yap</button>
+                <button type="submit" class="btn btn-danger btn-lg">
+                    <i class="fas fa-sign-out-alt"></i> Çıkış Yap
+                </button>
             </form>
         </div>
-
+    </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function cancelTicket(ticketId) {
+        Swal.fire({
+            title: 'Bilet İptali',
+            text: 'Bu bileti iptal etmek istediğinizden emin misiniz?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Evet, İptal Et',
+            cancelButtonText: 'Vazgeç'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('@Url.Action("CancelTicket", "Account")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    body: JSON.stringify(ticketId)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Başarılı!',
+                            text: data.message
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Hata!',
+                            text: data.message
+                        });
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Hata!',
+                        text: 'Bir hata oluştu!'
+                    });
+                });
+            }
+        });
+    }
+</script>
+
+<style>
+    .card {
+        transition: transform 0.2s ease-in-out;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .text-sm {
+        font-size: 0.875rem;
+    }
+    
+    .badge {
+        font-size: 0.75em;
+    }
+    
+    .card-header {
+        border-bottom: 1px solid rgba(0,0,0,.125);
+    }
+    
+    .card-footer {
+        border-top: 1px solid rgba(0,0,0,.125);
+    }
+</style>

@@ -1,0 +1,324 @@
+@{
+    ViewData["Title"] = "Koltuk Durumu";
+    var trip = ViewBag.Trip as BiletSatisWebApp.Models.Trip;
+    var maxSeats = ViewBag.MaxSeats as int?;
+    var seatStatus = ViewBag.SeatStatus as Dictionary<int, BiletSatisWebApp.Models.Seat>;
+}
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-chair"></i> Koltuk Durumu
+                    </h4>
+                    <p class="mb-0">
+                        <strong>Sefer:</strong> @trip.FromCity → @trip.ToCity
+                        (@trip.DepartureDate.ToString("dd.MM.yyyy") @trip.DepartureTime.ToString(@"hh\:mm"))
+                        - @trip.TransportType
+                    </p>
+                </div>
+                <div class="card-body">
+                    <!-- Legend -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-center flex-wrap gap-4">
+                                <div class="legend-item">
+                                    <div class="seat-demo available"></div>
+                                    <span>Boş (@(maxSeats - seatStatus?.Count(s => s.Value.IsOccupied) ?? maxSeats))</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="seat-demo occupied"></div>
+                                    <span>Dolu (@(seatStatus?.Count(s => s.Value.IsOccupied) ?? 0))</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seat Layout -->
+                    @if (trip.TransportType == "Otobüs")
+                    {
+                        <!-- Bus Layout -->
+                        <div class="transport-layout">
+                            <div class="text-center mb-3">
+                                <i class="fas fa-bus text-primary" style="font-size: 2rem;"></i>
+                                <h6>Otobüs Koltuk Düzeni</h6>
+                            </div>
+                            
+                            <div class="seat-grid">
+                                @for (int row = 1; row <= 6; row++)
+                                {
+                                    <div class="seat-row">
+                                        @for (int col = 1; col <= 4; col++)
+                                        {
+                                            int seatNumber = (row - 1) * 4 + col;
+                                            var seat = seatStatus?.ContainsKey(seatNumber) == true ? seatStatus[seatNumber] : null;
+                                            if (col == 3)
+                                            {
+                                                <div class="aisle"></div>
+                                            }
+                                            <div class="seat-container" data-toggle="tooltip" 
+                                                 title="@(seat?.IsOccupied == true ? $"Koltuk {seatNumber} - {seat.User?.UserName ?? "Bilinmiyor"}" : $"Koltuk {seatNumber} - Boş")">
+                                                <div class="seat @(seat?.IsOccupied == true ? "occupied" : "available")">
+                                                    @seatNumber
+                                                </div>
+                                                @if (seat?.IsOccupied == true)
+                                                {
+                                                    <small class="seat-info">@seat.User?.UserName</small>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                                
+                                <!-- Back seats -->
+                                @for (int row = 7; row <= 8; row++)
+                                {
+                                    <div class="seat-row">
+                                        @for (int col = 1; col <= 5; col++)
+                                        {
+                                            int seatNumber = 24 + (row - 7) * 5 + col;
+                                            if (seatNumber > 30) break;
+                                            var seat = seatStatus?.ContainsKey(seatNumber) == true ? seatStatus[seatNumber] : null;
+                                            if (col == 3)
+                                            {
+                                                <div class="aisle"></div>
+                                            }
+                                            <div class="seat-container" data-toggle="tooltip" 
+                                                 title="@(seat?.IsOccupied == true ? $"Koltuk {seatNumber} - {seat.User?.UserName ?? "Bilinmiyor"}" : $"Koltuk {seatNumber} - Boş")">
+                                                <div class="seat @(seat?.IsOccupied == true ? "occupied" : "available")">
+                                                    @seatNumber
+                                                </div>
+                                                @if (seat?.IsOccupied == true)
+                                                {
+                                                    <small class="seat-info">@seat.User?.UserName</small>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Generic grid layout for other transport types -->
+                        <div class="transport-layout">
+                            <div class="text-center mb-3">
+                                <i class="fas fa-@(trip.TransportType == "Uçak" ? "plane" : "train") text-primary" style="font-size: 2rem;"></i>
+                                <h6>@trip.TransportType Koltuk Düzeni</h6>
+                            </div>
+                            
+                            <div class="generic-seat-grid">
+                                @{
+                                    int seatsPerRow = trip.TransportType == "Uçak" ? 6 : 4;
+                                    int totalRows = (int)Math.Ceiling((double)maxSeats / seatsPerRow);
+                                }
+                                
+                                @for (int row = 1; row <= totalRows; row++)
+                                {
+                                    <div class="seat-row">
+                                        @for (int col = 1; col <= seatsPerRow; col++)
+                                        {
+                                            int seatNumber = (row - 1) * seatsPerRow + col;
+                                            if (seatNumber > maxSeats) break;
+                                            
+                                            var seat = seatStatus?.ContainsKey(seatNumber) == true ? seatStatus[seatNumber] : null;
+                                            
+                                            if (trip.TransportType == "Uçak" && (col == 3 || col == 4))
+                                            {
+                                                <div class="aisle"></div>
+                                            }
+                                            else if (trip.TransportType == "Tren" && col == 3)
+                                            {
+                                                <div class="aisle"></div>
+                                            }
+                                            
+                                            <div class="seat-container" data-toggle="tooltip" 
+                                                 title="@(seat?.IsOccupied == true ? $"Koltuk {seatNumber} - {seat.User?.UserName ?? "Bilinmiyor"}" : $"Koltuk {seatNumber} - Boş")">
+                                                <div class="seat @(seat?.IsOccupied == true ? "occupied" : "available")">
+                                                    @seatNumber
+                                                </div>
+                                                @if (seat?.IsOccupied == true)
+                                                {
+                                                    <small class="seat-info">@seat.User?.UserName</small>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Statistics -->
+                    <div class="row mt-4">
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body text-center">
+                                    <h4>@(maxSeats - (seatStatus?.Count(s => s.Value.IsOccupied) ?? 0))</h4>
+                                    <p class="mb-0">Boş Koltuk</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="card bg-danger text-white">
+                                <div class="card-body text-center">
+                                    <h4>@(seatStatus?.Count(s => s.Value.IsOccupied) ?? 0)</h4>
+                                    <p class="mb-0">Dolu Koltuk</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body text-center">
+                                    <h4>@maxSeats</h4>
+                                    <p class="mb-0">Toplam Kapasite</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body text-center">
+                                    <h4>%@(maxSeats > 0 ? Math.Round((double)(seatStatus?.Count(s => s.Value.IsOccupied) ?? 0) / maxSeats * 100, 1) : 0)</h4>
+                                    <p class="mb-0">Doluluk Oranı</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex gap-2">
+                        <a href="@Url.Action("Trips", "Admin")" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Geri
+                        </a>
+                        <a href="@Url.Action("TripTickets", "Admin", new { tripId = trip.Id })" class="btn btn-primary">
+                            <i class="fas fa-ticket-alt"></i> Biletleri Görüntüle
+                        </a>
+                        <a href="@Url.Action("SoldTickets", "Admin")" class="btn btn-success">
+                            <i class="fas fa-list"></i> Tüm Biletler
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .transport-layout {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .seat-grid, .generic-seat-grid {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .seat-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .seat-container {
+        text-align: center;
+        position: relative;
+    }
+
+    .seat {
+        width: 40px;
+        height: 40px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+
+    .seat.available {
+        background-color: #28a745;
+        color: white;
+        border-color: #1e7e34;
+    }
+
+    .seat.occupied {
+        background-color: #dc3545;
+        color: white;
+        border-color: #c82333;
+    }
+
+    .seat-info {
+        display: block;
+        width: 40px;
+        font-size: 8px;
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .aisle {
+        width: 20px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6c757d;
+        font-size: 12px;
+    }
+
+    .aisle:after {
+        content: "◦";
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .seat-demo {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #ddd;
+        border-radius: 4px;
+    }
+
+    .seat-demo.available {
+        background-color: #28a745;
+        border-color: #1e7e34;
+    }
+
+    .seat-demo.occupied {
+        background-color: #dc3545;
+        border-color: #c82333;
+    }
+
+    @media (max-width: 768px) {
+        .seat {
+            width: 30px;
+            height: 30px;
+            font-size: 10px;
+        }
+        
+        .seat-info {
+            width: 30px;
+            font-size: 7px;
+        }
+    }
+</style>
+
+<script>
+    // Initialize tooltips
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>

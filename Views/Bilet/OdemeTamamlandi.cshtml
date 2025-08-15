@@ -1,0 +1,77 @@
+@{
+    ViewData["Title"] = "Ödeme Tamamlandı";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-success">
+                <div class="card-body text-center p-5">
+                    <div class="mb-4">
+                        <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                    </div>
+                    
+                    <h2 class="text-success mb-4">Ödeme Başarılı!</h2>
+                    
+                    <div class="alert alert-success" role="alert">
+                        <h5 class="alert-heading">Tebrikler!</h5>
+                        <p class="mb-0">@ViewBag.SuccessMessage</p>
+                    </div>
+                    
+                    @if(ViewBag.TicketId != null)
+                    {
+                        <div class="mt-4 p-3 bg-light rounded">
+                            <h6>Bilet Numaranız</h6>
+                            <h4 class="text-primary">#@ViewBag.TicketId</h4>
+                            <small class="text-muted">Bu numarayı kaydetmeyi unutmayın</small>
+                        </div>
+                    }
+                    
+                    <div class="mt-4">
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <a href="@Url.Action("Profile", "Account")" class="btn btn-primary btn-lg w-100">
+                                    <i class="fas fa-user"></i> Profilime Git
+                                </a>
+                            </div>
+                            <div class="col-12">
+                                <a href="@Url.Action("Index", "Home")" class="btn btn-outline-secondary w-100">
+                                    <i class="fas fa-home"></i> Ana Sayfaya Dön
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Auto redirect after 30 seconds
+    setTimeout(function() {
+        window.location.href = '@Url.Action("Profile", "Account")';
+    }, 30000);
+</script>
+
+<style>
+    .card {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    
+    .fas.fa-check-circle {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.1);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+</style>

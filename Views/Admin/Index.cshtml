@@ -1,70 +1,286 @@
-﻿@{
+@{
     Layout = "_LayoutAdmin";
 }
 
 @{
-    ViewData["Title"] = "Admin Paneli - Anasayfa";
+    ViewData["Title"] = "Admin Panel";
 }
 
-<style>
-    .custom-card {
-        border-radius: 12px;
-        min-height: 350px; /* Kartın daha uzun olması için */
-        padding: 1.5rem;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="display-4 text-primary mb-4">
+                <i class="fas fa-tachometer-alt"></i> Admin Panel
+            </h2>
+        </div>
+    </div>
 
-    .bg-primary-pastel {
-        background:#ffb4bf; 
-        color: #800020;
-    }
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex">
+                        <div class="flex-grow-1">
+                            <h6 class="text-white-50">Toplam Sefer</h6>
+                            <h3>@ViewBag.TotalTrips</h3>
+                            <small class="text-white-50">Sisteme eklenen seferler</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-route fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    .bg-success-pastel {
-        background-color: #b8f2d9; 
-        color: #065f46;
-    }
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex">
+                        <div class="flex-grow-1">
+                            <h6 class="text-white-50">Satılan Biletler</h6>
+                            <h3>@ViewBag.TotalTicketsSold</h3>
+                            <small class="text-white-50">Toplam satış adedi</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-ticket-alt fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    .bg-warning-pastel {
-        background-color: #fff3bf; 
-        color: #7a5e00;
-    }
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-warning text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex">
+                        <div class="flex-grow-1">
+                            <h6 class="text-white-50">Toplam Gelir</h6>
+                            <h3>@ViewBag.TotalRevenue.ToString("C", new System.Globalization.CultureInfo("tr-TR"))</h3>
+                            <small class="text-white-50">Aktif biletlerden gelir</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-money-bill-wave fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    .card-header {
-        font-weight: 600;
-        font-size: 1.25rem;
-    }
-
-    .card-title {
-        font-size: 2.5rem;
-        font-weight: 700;
-    }
-</style>
-
-<div class="row g-4">
-    <div class="col-md-4">
-        <div class="card custom-card bg-primary-pastel">
-            <div class="card-header">Toplam Sefer Sayısı</div>
-            <div class="card-body d-flex align-items-center justify-content-center">
-                <h3 class="card-title">@ViewBag.TotalTicketsSold</h3>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex">
+                        <div class="flex-grow-1">
+                            <h6 class="text-white-50">Kayıtlı Kullanıcı</h6>
+                            <h3>@ViewBag.TotalUsers</h3>
+                            <small class="text-white-50">Toplam üye sayısı</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card custom-card bg-success-pastel">
-            <div class="card-header">Toplam Kullanıcı Sayısı</div>
-            <div class="card-body d-flex align-items-center justify-content-center">
-                <h3 class="card-title">@ViewBag.TotalUsers</h3>
+
+    <!-- Today's Statistics -->
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-3">
+            <div class="card bg-light border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">
+                        <i class="fas fa-calendar-day"></i> Bugünkü İstatistikler
+                    </h5>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="text-center p-3">
+                                <h4 class="text-success">@ViewBag.TodaySales</h4>
+                                <p class="mb-0 text-muted">Bugün Satılan Bilet</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3">
+                                <h4 class="text-warning">@ViewBag.TodayRevenue.ToString("C", new System.Globalization.CultureInfo("tr-TR"))</h4>
+                                <p class="mb-0 text-muted">Bugünkü Gelir</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-3">
+            <div class="card bg-light border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">
+                        <i class="fas fa-chart-line"></i> Sistem Durumu
+                    </h5>
+                    <div class="d-flex justify-content-around text-center">
+                        <div>
+                            <div class="text-success">
+                                <i class="fas fa-check-circle fa-2x"></i>
+                            </div>
+                            <small class="text-muted">Sistem Aktif</small>
+                        </div>
+                        <div>
+                            <div class="text-primary">
+                                <i class="fas fa-database fa-2x"></i>
+                            </div>
+                            <small class="text-muted">Veritabanı Bağlı</small>
+                        </div>
+                        <div>
+                            <div class="text-warning">
+                                <i class="fas fa-shield-alt fa-2x"></i>
+                            </div>
+                            <small class="text-muted">Güvenli</small>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card custom-card bg-warning-pastel">
-            <div class="card-header">Bugünkü Satış Adedi</div>
-            <div class="card-body d-flex align-items-center justify-content-center">
-                <h3 class="card-title">@ViewBag.TodaySales</h3>
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt"></i> Hızlı İşlemler
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <a href="@Url.Action("SellTicket", "Admin")" class="btn btn-success btn-lg w-100 h-100 d-flex flex-column justify-content-center">
+                                <i class="fas fa-plus fa-2x mb-2"></i>
+                                <span>Yeni Sefer Ekle</span>
+                                <small class="mt-1">Satışa yeni sefer çıkar</small>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <a href="@Url.Action("Trips", "Admin")" class="btn btn-primary btn-lg w-100 h-100 d-flex flex-column justify-content-center">
+                                <i class="fas fa-route fa-2x mb-2"></i>
+                                <span>Seferleri Yönet</span>
+                                <small class="mt-1">Mevcut seferleri görüntüle</small>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <a href="@Url.Action("SoldTickets", "Admin")" class="btn btn-warning btn-lg w-100 h-100 d-flex flex-column justify-content-center">
+                                <i class="fas fa-ticket-alt fa-2x mb-2"></i>
+                                <span>Satılan Biletler</span>
+                                <small class="mt-1">Bilet satış raporları</small>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <a href="@Url.Action("Index", "Home")" class="btn btn-info btn-lg w-100 h-100 d-flex flex-column justify-content-center">
+                                <i class="fas fa-home fa-2x mb-2"></i>
+                                <span>Ana Sayfa</span>
+                                <small class="mt-1">Siteyi ziyaret et</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock"></i> Son Aktiviteler
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center py-4">
+                        <i class="fas fa-chart-bar text-muted" style="font-size: 3rem;"></i>
+                        <p class="mt-3 text-muted">Aktivite takibi yakında eklenecek...</p>
+                        <small class="text-muted">Bilet satışları, kullanıcı aktiviteleri ve sistem olayları</small>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div class="toast show" role="alert">
+            <div class="toast-header bg-success text-white">
+                <i class="fas fa-check-circle me-2"></i>
+                <strong class="me-auto">Başarılı</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body">
+                @TempData["Success"]
+            </div>
+        </div>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div class="toast show" role="alert">
+            <div class="toast-header bg-danger text-white">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong class="me-auto">Hata</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body">
+                @TempData["Error"]
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .btn {
+        transition: all 0.2s ease-in-out;
+    }
+    
+    .btn:hover {
+        transform: translateY(-1px);
+    }
+    
+    .opacity-75 {
+        opacity: 0.75;
+    }
+    
+    .toast {
+        z-index: 9999;
+    }
+    
+    .fa-2x {
+        font-size: 2em;
+    }
+    
+    .fa-3x {
+        font-size: 3em;
+    }
+</style>
+
+<script>
+    // Auto-hide toasts after 5 seconds
+    setTimeout(function() {
+        $('.toast').toast('hide');
+    }, 5000);
+</script>
 
 
